@@ -113,6 +113,7 @@ fun App() {
     var total by remember { mutableStateOf(0) }
     var weak by remember { mutableStateOf(0) }
     var worst by remember { mutableStateOf<Int?>(null) }
+    var cam by remember { mutableStateOf(false) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         granted = hasPerms(ctx)
     }
@@ -134,6 +135,7 @@ fun App() {
     val (label, col) = rsrpLabel(snap.rsrp)
     val voiceOk = snap.voiceType.contains("LTE") || snap.voiceType.contains("5G")
 
+    if (cam) { CameraScreen(snap) { cam = false }; return }
     Column(
         Modifier.fillMaxSize().systemBarsPadding().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -174,13 +176,14 @@ fun App() {
             saveLog(ctx, log)
         }) { Text("Call was bad (log it now)") }
 
+        Button(modifier = Modifier.fillMaxWidth(), onClick = { cam = true }) { Text("Signal camera (paint the signal map)") }
         Text("Shortcuts", fontSize = 16.sp)
         Button(modifier = Modifier.fillMaxWidth(), onClick = { open(ctx, Intent(Settings.ACTION_NETWORK_OPERATOR_SETTINGS)) }) { Text("Mobile network settings") }
         Button(modifier = Modifier.fillMaxWidth(), onClick = { open(ctx, Intent(Settings.ACTION_DATA_ROAMING_SETTINGS)) }) { Text("Preferred network type / SIM") }
         Button(modifier = Modifier.fillMaxWidth(), onClick = { open(ctx, Intent(Settings.ACTION_WIRELESS_SETTINGS)) }) { Text("Wireless and airplane mode") }
         Button(modifier = Modifier.fillMaxWidth(), onClick = { open(ctx, Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + Uri.encode("*#*#4636#*#*")))) }) { Text("Hidden phone info (may not work on Oppo)") }
         Button(modifier = Modifier.fillMaxWidth(), onClick = { open(ctx, Intent(Intent.ACTION_DIAL, Uri.parse("tel:199"))) }) { Text("Call Jio care (199)") }
-        Button(modifier = Modifier.fillMaxWidth(), onClick = { open(ctx, Intent(Settings.ACTION_PRIVACY_SETTINGS)) }.let { { open(ctx, Intent(Settings.ACTION_SETTINGS)) } }) { Text("Open Settings (reset network is under Additional Settings)") }
+        Button(modifier = Modifier.fillMaxWidth(), onClick = { open(ctx, Intent(Settings.ACTION_SETTINGS)) }) { Text("Open Settings (reset network is under Additional Settings)") }
 
         Text("Bad-call log", fontSize = 16.sp)
         if (log.isEmpty()) Text("Nothing logged yet. Tap the button right after a bad call.")
